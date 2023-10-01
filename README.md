@@ -12,11 +12,22 @@ In a new cloud instance, install Rust:
 curl https://sh.rustup.rs -sSf | sh
 ```
 
+Run following to add cargo to your current shell.
+
+```
+source "$HOME/.cargo/env"
+```
+
 And then:
 
 ```sh
 sudo apt update
 sudo apt install -y pkg-config libssl-dev build-essential libfontconfig1-dev
+```
+
+Then, clone this repo. And run
+
+```
 cargo build --release
 chmod +x src/circom_proofgen.sh
 ```
@@ -57,7 +68,6 @@ To test local proofgen, send `relayer@sendeth.org` an email while relayer is run
 ./src/circom_proofgen.sh
 ```
 
-
 ## Run
 
 First, run the relayer.
@@ -80,6 +90,7 @@ python3 coordinator.py
 ## Update the docker file
 
 Note that this dir structure is only needed if you want to regenerate the docker image.
+
 ```
 -
   - zk-email-verify

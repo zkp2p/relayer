@@ -1,4 +1,5 @@
 import modal
+import re
 import sys
 import time
 from watchdog.observers import Observer
@@ -22,8 +23,8 @@ class Prover(Enum):
 
 load_dotenv()  # Load environment variables from .env file
 PROVER_LOCATION = Prover(os.getenv('PROVER_LOCATION', Prover.MODAL_ENDPOINT.value))
-bucket_name = "relayer-emails"  # Replace with your S3 bucket name
-object_key_template = "emls/wallet_[nonce].txt"  # Replace with the desired object key (name) in S3
+bucket_name = "relayer-emails-zkp2p"  # Replace with your S3 bucket name
+object_key_template = "emls/venmo_[email_type]_[nonce].txt"  # Replace with the desired object key (name) in S3
 s3_url = "https://" + bucket_name + ".s3.amazonaws.com/" + object_key_template
 
 # ----------------- LOCAL ENV -----------------
@@ -131,8 +132,8 @@ def download_and_write_file(s3_url, nonce):
     print("Email file contents: ", file_contents)
 
 
-def upload_file_to_s3(local_file_path, bucket_name, nonce):
-    object_key = object_key_template.replace("[nonce]", nonce)
+def upload_file_to_s3(local_file_path, bucket_name, email_type, nonce):
+    object_key = object_key_template.replace("[email_type]", email_type).replace("[nonce]", nonce)
 
     # Create an S3 client using boto3
     s3_client = boto3.client('s3')
@@ -191,6 +192,17 @@ def is_eml_file(file_name):
     return file_extension.lower() == '.eml'
 
 
+
+def extract_info(email_file_name):
+    pattern = re.compile(r'venmo_(.*?)_(.*?)\.eml')
+    match = pattern.match(email_file_name)
+    
+    if match:
+        email_type, nonce = match.groups()
+        return email_type, nonce
+    else:
+        raise ValueError("Invalid email file name format")
+
 class DirectoryChangeHandler(FileSystemEventHandler):
     def on_created(self, event):
         if not event.is_directory:
@@ -199,11 +211,13 @@ class DirectoryChangeHandler(FileSystemEventHandler):
             if (is_eml_file(file_name)):
                 # with open(event.src_path, 'r') as file:
                 #     email_content = file.read()
-                nonce = file_name[file_name.find('wallet_') + 7:file_name.rfind('.')]
-                aws_url = upload_file_to_s3(event.src_path, bucket_name, nonce)
+                
+                # email file name = venmo_[email_type]_[nonce].eml
+                email_type, nonce = extract_info(file_name)
+                aws_url = upload_file_to_s3(event.src_path, bucket_name, email_type, nonce)
 
                 if PROVER_LOCATION == Prover.LOCAL:
-                    subprocess.run(["./src/circom_proofgen.sh", nonce])
+                    subprocess.run(["./src/circom_proofgen.sh", email_type, nonce])
                 elif PROVER_LOCATION == Prover.MODAL_ENDPOINT or PROVER_LOCATION == Prover.MODAL_CLOUD:
                     send_to_modal(aws_url, nonce)
                 elif PROVER_LOCATION == Prover.MODAL_STUB:
