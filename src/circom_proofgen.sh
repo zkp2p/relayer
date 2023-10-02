@@ -59,23 +59,24 @@ if [ $status_jswitgen -ne 0 ]; then
     exit 1
 fi
 
-# # echo "/${build_dir}/${CIRCUIT_NAME}_cpp/${CIRCUIT_NAME} ${input_wallet_path} ${witness_path}"
-# # "/${build_dir}/${CIRCUIT_NAME}_cpp/${CIRCUIT_NAME}" "${input_wallet_path}" "${witness_path}"
-# # status_c_wit=$?
+echo "/${build_dir}/${circuit_name}_cpp/${circuit_name} ${input_email_path} ${witness_path}"
+"/${build_dir}/${circuit_name}_cpp/${circuit_name}" "${input_email_path}" "${witness_path}"
+status_c_wit=$?
 
-# # echo "Finished C witness gen! Status: ${status_c_wit}"
-# # if [ $status_c_wit -ne 0 ]; then
-# #     echo "C based witness gen failed with status (might be on machine specs diff than compilation): ${status_c_wit}"
-# #     exit 1
-# # fi
-# echo "ldd ${HOME}/rapidsnark/build/prover"
-# ldd "${HOME}/rapidsnark/build/prover"
-# status_lld=$?
+echo "Finished C witness gen! Status: ${status_c_wit}"
+if [ $status_c_wit -ne 0 ]; then
+    echo "C based witness gen failed with status (might be on machine specs diff than compilation): ${status_c_wit}"
+    exit 1
+fi
 
-# if [ $status_lld -ne 0 ]; then
-#     echo "lld prover dependencies failed with status: ${status_lld}"
-#     exit 1
-# fi
+echo "ldd ${HOME}/rapidsnark/build/prover"
+ldd "${HOME}/rapidsnark/build/prover"
+status_lld=$?
+
+if [ $status_lld -ne 0 ]; then
+    echo "lld prover dependencies failed with status: ${status_lld}"
+    exit 1
+fi
 
 # echo "${HOME}/rapidsnark/build/prover ${build_dir}/${CIRCUIT_NAME}.zkey ${witness_path} ${proof_path} ${public_path}"
 # "${HOME}/rapidsnark/build/prover" "${build_dir}/${CIRCUIT_NAME}.zkey" "${witness_path}" "${proof_path}" "${public_path}"  | tee /dev/stderr
