@@ -59,15 +59,15 @@ if [ $status_jswitgen -ne 0 ]; then
     exit 1
 fi
 
-echo "/${build_dir}/${circuit_name}_cpp/${circuit_name} ${input_email_path} ${witness_path}"
-"/${build_dir}/${circuit_name}_cpp/${circuit_name}" "${input_email_path}" "${witness_path}"
-status_c_wit=$?
+# echo "/${build_dir}/${circuit_name}_cpp/${circuit_name} ${input_email_path} ${witness_path}"
+# "/${build_dir}/${circuit_name}_cpp/${circuit_name}" "${input_email_path}" "${witness_path}"
+# status_c_wit=$?
 
-echo "Finished C witness gen! Status: ${status_c_wit}"
-if [ $status_c_wit -ne 0 ]; then
-    echo "C based witness gen failed with status (might be on machine specs diff than compilation): ${status_c_wit}"
-    exit 1
-fi
+# echo "Finished C witness gen! Status: ${status_c_wit}"
+# if [ $status_c_wit -ne 0 ]; then
+#     echo "C based witness gen failed with status (might be on machine specs diff than compilation): ${status_c_wit}"
+#     exit 1
+# fi
 
 echo "ldd ${HOME}/rapidsnark/build/prover"
 ldd "${HOME}/rapidsnark/build/prover"
