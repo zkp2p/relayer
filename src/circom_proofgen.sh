@@ -29,15 +29,15 @@ if [ "$PROVER_LOCATION" = "local" ]; then
     venmo_eml_dir_path=$LOCAL_INCOMING_EML_PATH
 fi
 
-# prover_output_path="${venmo_eml_dir_path}/../proofs/"
+prover_output_path="${venmo_eml_dir_path}/../proofs/"
 
 circuit_name=venmo_${email_type}
 venmo_eml_path="${venmo_eml_dir_path}/venmo_${email_type}_${nonce}.eml"
 build_dir="${zk_p2p_path}/circuits-circom/build/${circuit_name}"
 input_email_path="${venmo_eml_dir_path}/../inputs/input_venmo_${email_type}_${nonce}.json"
 witness_path="${build_dir}/witness_${email_type}_${nonce}.wtns"
-# proof_path="${prover_output_path}/rapidsnark_proof_${nonce}.json"
-# public_path="${prover_output_path}/rapidsnark_public_${nonce}.json"
+proof_path="${prover_output_path}/rapidsnark_proof_${email_type}_${nonce}.json"
+public_path="${prover_output_path}/rapidsnark_public_${email_type}_${nonce}.json"
 
 echo "npx tsx ${zk_p2p_path}/circuits-circom/scripts/generate_input.ts --email_file='${venmo_eml_path}' --email_type='${email_type}' --nonce='${nonce}'"
 npx tsx "${zk_p2p_path}/circuits-circom/scripts/generate_input.ts" --email_file="${venmo_eml_path}" --email_type="${email_type}" --nonce="${nonce}" | tee /dev/stderr
@@ -78,16 +78,16 @@ if [ $status_lld -ne 0 ]; then
     exit 1
 fi
 
-# echo "${HOME}/rapidsnark/build/prover ${build_dir}/${CIRCUIT_NAME}.zkey ${witness_path} ${proof_path} ${public_path}"
-# "${HOME}/rapidsnark/build/prover" "${build_dir}/${CIRCUIT_NAME}.zkey" "${witness_path}" "${proof_path}" "${public_path}"  | tee /dev/stderr
-# status_prover=$?
+echo "${HOME}/rapidsnark/build/prover ${build_dir}/${circuit_name}.zkey ${witness_path} ${proof_path} ${public_path}"
+"${HOME}/rapidsnark/build/prover" "${build_dir}/${circuit_name}.zkey" "${witness_path}" "${proof_path}" "${public_path}"  | tee /dev/stderr
+status_prover=$?
 
-# if [ $status_prover -ne 0 ]; then
-#     echo "prover failed with status: ${status_prover}"
-#     exit 1
-# fi
+if [ $status_prover -ne 0 ]; then
+    echo "prover failed with status: ${status_prover}"
+    exit 1
+fi
 
-# echo "Finished proofgen! Status: ${status_prover}"
+echo "Finished proofgen! Status: ${status_prover}"
 
 # # TODO: Upgrade debug -> release and edit dockerfile to use release
 # echo "${HOME}/relayer/target/debug/relayer chain false ${prover_output_path} ${nonce}"
