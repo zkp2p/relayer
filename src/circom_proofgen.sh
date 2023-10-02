@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# CIRCUIT_NAME="wallet"
+
 # if source "/home/ubuntu/relayer/.env"; then
 #     echo "Sourced from /home/ubuntu/relayer/.env"
 # elif source "/root/relayer/.env"; then
@@ -21,20 +21,21 @@ nonce=$2
 echo $PROVER_TYPE
 zk_p2p_path="${MODAL_ZK_P2P_CIRCOM_PATH}"
 HOME="${MODAL_ZK_P2P_CIRCOM_PATH}/../"
-wallet_eml_dir_path=$MODAL_INCOMING_EML_PATH
+venmo_eml_dir_path=$MODAL_INCOMING_EML_PATH
 
 if [ "$PROVER_LOCATION" = "local" ]; then
     zk_p2p_path=$LOCAL_ZK_P2P_CIRCOM_PATH
     HOME="${LOCAL_ZK_P2P_CIRCOM_PATH}/../"
-    wallet_eml_dir_path=$LOCAL_INCOMING_EML_PATH
+    venmo_eml_dir_path=$LOCAL_INCOMING_EML_PATH
 fi
 
-# prover_output_path="${wallet_eml_dir_path}/../proofs/"
+# prover_output_path="${venmo_eml_dir_path}/../proofs/"
 
-venmo_eml_path="${wallet_eml_dir_path}/venmo_${email_type}_${nonce}.eml"
-# build_dir="${zk_p2p_path}/build/${CIRCUIT_NAME}"
-# input_wallet_path="${wallet_eml_dir_path}/input_${nonce}.json"
-# witness_path="${build_dir}/witness_${nonce}.wtns"
+circuit_name=venmo_${email_type}
+venmo_eml_path="${venmo_eml_dir_path}/venmo_${email_type}_${nonce}.eml"
+build_dir="${zk_p2p_path}/circuits-circom/build/${circuit_name}"
+input_email_path="${venmo_eml_dir_path}/../inputs/input_venmo_${email_type}_${nonce}.json"
+witness_path="${build_dir}/witness_${email_type}_${nonce}.wtns"
 # proof_path="${prover_output_path}/rapidsnark_proof_${nonce}.json"
 # public_path="${prover_output_path}/rapidsnark_public_${nonce}.json"
 
@@ -48,15 +49,15 @@ if [ $status_inputgen -ne 0 ]; then
     exit 1
 fi
 
-# echo "node ${build_dir}/${CIRCUIT_NAME}_js/generate_witness.js ${build_dir}/${CIRCUIT_NAME}_js/${CIRCUIT_NAME}.wasm ${input_wallet_path} ${witness_path}"
-# node "${build_dir}/${CIRCUIT_NAME}_js/generate_witness.js" "${build_dir}/${CIRCUIT_NAME}_js/${CIRCUIT_NAME}.wasm" "${input_wallet_path}" "${witness_path}"  | tee /dev/stderr
+echo "node ${build_dir}/${circuit_name}_js/generate_witness.js ${build_dir}/${circuit_name}_js/${circuit_name}.wasm ${input_email_path} ${witness_path}"
+node "${build_dir}/${circuit_name}_js/generate_witness.js" "${build_dir}/${circuit_name}_js/${circuit_name}.wasm" "${input_email_path}" "${witness_path}"  | tee /dev/stderr
+status_jswitgen=$?
+echo "status_jswitgen: ${status_jswitgen}"
 
-# status_jswitgen=$?
-# echo "status_jswitgen: ${status_jswitgen}"
-# if [ $status_jswitgen -ne 0 ]; then
-#     echo "generate_witness.js failed with status: ${status_jswitgen}"
-#     exit 1
-# fi
+if [ $status_jswitgen -ne 0 ]; then
+    echo "generate_witness.js failed with status: ${status_jswitgen}"
+    exit 1
+fi
 
 # # echo "/${build_dir}/${CIRCUIT_NAME}_cpp/${CIRCUIT_NAME} ${input_wallet_path} ${witness_path}"
 # # "/${build_dir}/${CIRCUIT_NAME}_cpp/${CIRCUIT_NAME}" "${input_wallet_path}" "${witness_path}"
