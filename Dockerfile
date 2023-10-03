@@ -1,9 +1,9 @@
+# Todo: Add refresh logic.
 # Use the official Rust image as the base image
 FROM rust:latest
 ARG ZKP2P_BRANCH_NAME=sachin/integrate-relayer
 ARG RELAYER_BRANCH_NAME=develop
-# ARG REFRESH_ZK_EMAIL=0
-# ARG REFRESH_RELAYER=0
+
 
 # Update the package list and install necessary dependencies
 RUN apt-get update && \
@@ -21,6 +21,8 @@ ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN node --version
 RUN npm --version
 RUN npm install -g yarn
+RUN npm install -g typescript
+RUN npm install -g tsx
 
 # Clone rapidsnark
 RUN  git clone https://github.com/Divide-By-0/rapidsnark /root/rapidsnark
@@ -37,12 +39,10 @@ WORKDIR /root/
 
 # Clone zk p2p repository at the latest commit and set it as the working directory
 RUN git clone https://github.com/zkp2p/zk-p2p -b ${ZKP2P_BRANCH_NAME} /root/zk-p2p
-# COPY ./zk-p2p/build /zk-p2p/build
-WORKDIR /root/zk-p2p
-
+WORKDIR /root/zk-p2p/circuits-circom
 RUN yarn install
 
-# Pull keys from S3
+# Pull keys from S3 (Could also fetch wasm)
 RUN wget -P /root/zk-p2p/circuits-circom/build/venmo_send https://zk-p2p.s3.amazonaws.com/v2/v0.0.6/venmo_send/venmo_send.zkey --quiet
 # RUN wget -P circuits-circom/build/venmo_receive https://zk-p2p.s3.amazonaws.com/v2/v0.0.6/venmo_receive/venmo_receive.zkey --quiet
 # RUN wget -P circuits-circom/build/venmo_registration https://zk-p2p.s3.amazonaws.com/v2/v0.0.6/venmo_registration/venmo_registration.zkey --quiet
@@ -62,22 +62,12 @@ RUN cp /root/relayer/target/x86_64-unknown-linux-gnu/debug/relayer /root/relayer
 RUN cargo build --target x86_64-unknown-linux-gnu --release
 RUN cp /root/relayer/target/x86_64-unknown-linux-gnu/release/relayer /root/relayer/target/release/
 
-# Update repos to latest commits
-# RUN git pull
-# RUN cargo build --target x86_64-unknown-linux-gnu
-# RUN cp /relayer/target/x86_64-unknown-linux-gnu/debug/relayer /relayer/target/debug/
-
-# WORKDIR /zk-email-verify
-# RUN git pull
-# RUN yarn install
-# RUN git pull
-
 # Make necessary files executable
 RUN chmod +x /root/relayer/src/circom_proofgen.sh
 
+# Install pytho, pip and requirements to run coordinator.py
+RUN apt-get install -y python3 python-is-python3 python3-pip
+RUN pip3 install -r /root/relayer/requirements.txt
 
-
-# run yarn install in zk-p2p/circuits-circom
-# install npx tsx
-# install python, pip and requirements to run coordinator.py
-# update .env.example
+# Copy .env.example to .env
+RUN cp /root/relayer/.env.example /root/relayer/.env
