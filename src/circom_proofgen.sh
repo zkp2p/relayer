@@ -39,8 +39,8 @@ witness_path="${build_dir}/witness_${email_type}_${nonce}.wtns"
 proof_path="${prover_output_path}/rapidsnark_proof_${email_type}_${nonce}.json"
 public_path="${prover_output_path}/rapidsnark_public_${email_type}_${nonce}.json"
 
-echo "npx tsx ${zk_p2p_path}/circuits-circom/scripts/generate_input.ts --email_file='${venmo_eml_path}' --email_type='${email_type}' --nonce='${nonce}'"
-npx tsx "${zk_p2p_path}/circuits-circom/scripts/generate_input.ts" --email_file="${venmo_eml_path}" --email_type="${email_type}" --nonce="${nonce}" | tee /dev/stderr
+echo "npx ${zk_p2p_path}/circuits-circom/node_modules/.bin/tsx ${zk_p2p_path}/circuits-circom/scripts/generate_input.ts --email_file='${venmo_eml_path}' --email_type='${email_type}' --nonce='${nonce}'"
+npx ${zk_p2p_path}/circuits-circom/node_modules/.bin/tsx "${zk_p2p_path}/circuits-circom/scripts/generate_input.ts" --email_file="${venmo_eml_path}" --email_type="${email_type}" --nonce="${nonce}" | tee /dev/stderr
 status_inputgen=$?
 
 echo "Finished input gen! Status: ${status_inputgen}"
